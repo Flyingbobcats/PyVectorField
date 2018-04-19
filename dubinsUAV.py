@@ -1,7 +1,7 @@
 
 import numpy as np
 
-class UAV():
+class dubinsUAV():
 
     def __init__(self):
 

@@ -1,102 +1,35 @@
 from vectorField import vectorField
 import numpy as np
 from matplotlib import pyplot as plt
-from UAV import UAV
+from dubinsUAV import dubinsUAV
 
 
 saveField = False
 saveUAVPath = False
 
-uav = UAV()
+uav = dubinsUAV()
 
 velocity = 0.25
 gamma = 1.0
-obstR = uav.v / 0.35
-x_start = -(velocity/0.35*gamma+obstR)*1.1
-x_start = -2
-uav.setup(x_start, 0, velocity, 0, 0.1)
+
+
+
 
 vf = vectorField()
 
 
-vf.setupObst(uav,0,0,0,gamma)
+vf.setupObst(0,0,gamma)
 vf.obstH = 6.1
 
-xs = np.linspace(-400,400,2*50/4)
-ys = xs
-X,Y = np.meshgrid(xs,ys)
-
-U = np.empty((len(xs),len(xs)))
-U[:] = np.nan
-
-V = np.empty((len(xs),len(xs)))
-V[:] = np.nan
-
-
-
-
-# for i in range(0, len(xs)):
-#     for j in range(0, len(ys)):
-#         # Vg = vf.calcPath(xs[i],ys[j])
-#
-#         Vg = vf.calcObst(xs[i], ys[j])
-#
-#         Vg = vf.getVFatXY(xs[i], ys[j])
-#
-#
-#
-#         U[i][j] = Vg[0][0]
-#         V[i][j] = Vg[1][0]
-#         X[i][j] = xs[i]
-#         Y[i][j] = ys[j]
-#
-#
-# plt.quiver(X,Y,U,V,scale=25)
-# plt.plot([-50,50],[0,0])
-# # plt.show()
-
-
 plt.ion()
-while uav.x < -1*x_start:
 
-    plt.cla()
-    # if abs(uav.x)<obstR:
-    #     for i in range(0, len(xs)):
-    #         for j in range(0, len(ys)):
-    #
-    #
-    #             Vg = vf.getVFatXY(xs[i], ys[j])
-    #
-    #
-    #
-    #             U[i][j] = Vg[0][0]
-    #             V[i][j] = Vg[1][0]
-    #             X[i][j] = xs[i]
-    #             Y[i][j] = ys[j]
-
-
-    vf.calcFullField()
-    plt.quiver(vf.Xs,vf.Ys,vf.Us,vf.Vs)
-
-    Vg = vf.getOptVF(uav)
-    heading = np.arctan2(Vg[1], Vg[0])
-    uav.update_pos(heading)
-    vf.pltObstacle()
-    plt.plot(uav.xs, uav.ys, 'r')
-    plt.quiver(uav.x,uav.y,uav.vx,uav.vy,color='b')
-    plt.quiver(uav.x,uav.y,Vg[0],Vg[1],color='r')
-
-    plt.axis('equal')
-
-
-    plt.pause(0.01)
+vf.simulateDubins()
 
 
 plt.show()
 
 plt.pause(10000)
 plt.savefig('flight.pdf')
-
 
 
 if saveField:

@@ -1,7 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from dubinsUAV import dubinsUAV
+
+
+
 class vectorField():
     def __init__(self):
+
+
 
         #Summed Guidance Parameters
         self.normSummedFields = True
@@ -35,6 +41,7 @@ class vectorField():
 
         self.x_range = np.linspace(-2, 2, 25)
         self.y_range = self.x_range
+        self.x_start = -2
 
         self.Us = np.empty((len(self.x_range), len(self.x_range)))
         self.Us[:] = np.nan
@@ -43,18 +50,27 @@ class vectorField():
         self.Vs[:] = np.nan
 
         self.Xs, self.Ys = np.meshgrid(self.x_range, self.y_range)
+
+
+        self.velocity = 0.25
+        self.dubinsUAV = dubinsUAV()
+        self.dubinsUAV.setup(self.x_start, 0, self.velocity, 0, 0.1)
+
+
+
         pass
 
 
-    def setupObst(self,uav,obstR,obstY,obstX,gamma):
-        self.obstR = uav.v / 0.35 + obstR
+    def setupObst(self,obstY,obstX,gamma):
+
+        self.obstR = self.dubinsUAV.v / 0.35
         self.obstY = obstY
         self.obstX = obstX
         self.xc = obstX
         self.yc = obstY
 
-        self.decayR = uav.turn_radius*gamma+self.obstR
-        self.pathH = 2*uav.v
+        self.decayR = self.dubinsUAV.turn_radius*gamma+self.obstR
+        self.pathH = 2*self.dubinsUAV.v
 
 
     def calcPath(self,x,y):
@@ -198,8 +214,6 @@ class vectorField():
         cys = self.yc+self.obstR*np.sin(theta)
         plt.plot(cxs,cys,'b')
 
-
-
     def calcFullField(self):
         for i in range(0, len(self.x_range)):
             for j in range(0, len(self.y_range)):
@@ -208,6 +222,29 @@ class vectorField():
                 self.Vs[i][j] = Vg[1][0]
                 self.Xs[i][j] = self.x_range[i]
                 self.Ys[i][j] = self.y_range[j]
+
+
+    def simulateDubins(self):
+        velocity = 0.25
+
+        self.dubinsUAV.setup(self.x_start, 0, velocity, 0, 0.1)
+        plt.ion()
+        while self.dubinsUAV.x < -1 * self.x_start:
+            plt.cla()
+            self.calcFullField()
+            plt.quiver(self.Xs, self.Ys, self.Us, self.Vs)
+
+            Vg = self.getOptVF(self.dubinsUAV)
+            heading = np.arctan2(Vg[1], Vg[0])
+            self.dubinsUAV.update_pos(heading)
+            self.pltObstacle()
+            plt.plot(self.dubinsUAV.xs, self.dubinsUAV.ys, 'r')
+            plt.quiver(self.dubinsUAV.x, self.dubinsUAV.y, self.dubinsUAV.vx, self.dubinsUAV.vy, color='b')
+            plt.quiver(self.dubinsUAV.x, self.dubinsUAV.y, Vg[0], Vg[1], color='r')
+
+            plt.axis('equal')
+
+            plt.pause(0.01)
 
 
 
