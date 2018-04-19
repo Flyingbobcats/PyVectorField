@@ -31,7 +31,18 @@ class vectorField():
         self.obstH = 10
         self.gamma = 1
 
+        #Plotting Functionality
 
+        self.x_range = np.linspace(-2, 2, 25)
+        self.y_range = self.x_range
+
+        self.Us = np.empty((len(self.x_range), len(self.x_range)))
+        self.Us[:] = np.nan
+
+        self.Vs = np.empty((len(self.x_range), len(self.x_range)))
+        self.Vs[:] = np.nan
+
+        self.Xs, self.Ys = np.meshgrid(self.x_range, self.y_range)
         pass
 
 
@@ -71,8 +82,6 @@ class vectorField():
             mag = mag = np.sqrt(np.square(gv[0])+np.square(gv[1]))
             gv = np.divide(gv,mag)
         return gv
-
-
 
 
     def calcObst(self,x,y):
@@ -135,7 +144,7 @@ class vectorField():
 
 
     def getOptVF(self,uav):
-        if uav.x <= (uav.turn_radius * self.gamma + self.obstR) * 1.1:
+        if uav.x <= (uav.turn_radius * self.gamma + self.obstR):
 
             alpha = np.arctan2(uav.y - self.obstY, uav.x)
             beta = np.pi - alpha + uav.heading
@@ -157,6 +166,7 @@ class vectorField():
                 self.avfWeight = 1 / 8
 
                 g = - uav.v * np.cos(abs(beta)) - abs(1 / ((range - self.obstR) * uav.v))
+                g = -(uav.v+abs(1/((range-self.obstR))))*np.cos(abs(beta))
                 if g > 0:
                     g = 0
 
@@ -181,13 +191,26 @@ class vectorField():
         return gv
 
 
-
     def pltObstacle(self):
 
         theta = np.linspace(0,2*np.pi,100)
         cxs = self.xc+self.obstR*np.cos(theta)
         cys = self.yc+self.obstR*np.sin(theta)
         plt.plot(cxs,cys,'b')
+
+
+
+    def calcFullField(self):
+        for i in range(0, len(self.x_range)):
+            for j in range(0, len(self.y_range)):
+                Vg = self.getVFatXY(self.x_range[i], self.y_range[j])
+                self.Us[i][j] = Vg[0][0]
+                self.Vs[i][j] = Vg[1][0]
+                self.Xs[i][j] = self.x_range[i]
+                self.Ys[i][j] = self.y_range[j]
+
+
+
 
 
 

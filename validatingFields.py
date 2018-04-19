@@ -9,24 +9,22 @@ saveUAVPath = False
 
 uav = UAV()
 
-velocity = 25
-gamma = 3.8013
-obstR = uav.v / 0.35+200
+velocity = 0.25
+gamma = 1.0
+obstR = uav.v / 0.35
 x_start = -(velocity/0.35*gamma+obstR)*1.1
+x_start = -2
 uav.setup(x_start, 0, velocity, 0, 0.1)
 
 vf = vectorField()
 
 
-vf.setupObst(uav,200,-200,0,gamma)
-vf.obstH = 4.222
+vf.setupObst(uav,0,0,0,gamma)
+vf.obstH = 6.1
 
 xs = np.linspace(-400,400,2*50/4)
 ys = xs
 X,Y = np.meshgrid(xs,ys)
-
-# U = np.nan((len(xs),len(xs)))
-# V = np.nan((len(xs),len(xs)))
 
 U = np.empty((len(xs),len(xs)))
 U[:] = np.nan
@@ -62,22 +60,23 @@ plt.ion()
 while uav.x < -1*x_start:
 
     plt.cla()
-    if abs(uav.x)<obstR:
-        for i in range(0, len(xs)):
-            for j in range(0, len(ys)):
+    # if abs(uav.x)<obstR:
+    #     for i in range(0, len(xs)):
+    #         for j in range(0, len(ys)):
+    #
+    #
+    #             Vg = vf.getVFatXY(xs[i], ys[j])
+    #
+    #
+    #
+    #             U[i][j] = Vg[0][0]
+    #             V[i][j] = Vg[1][0]
+    #             X[i][j] = xs[i]
+    #             Y[i][j] = ys[j]
 
 
-                Vg = vf.getVFatXY(xs[i], ys[j])
-
-
-
-                U[i][j] = Vg[0][0]
-                V[i][j] = Vg[1][0]
-                X[i][j] = xs[i]
-                Y[i][j] = ys[j]
-
-
-        plt.quiver(X,Y,U,V,scale=50)
+    vf.calcFullField()
+    plt.quiver(vf.Xs,vf.Ys,vf.Us,vf.Vs)
 
     Vg = vf.getOptVF(uav)
     heading = np.arctan2(Vg[1], Vg[0])
